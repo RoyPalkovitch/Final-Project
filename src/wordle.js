@@ -1,9 +1,12 @@
 
 const letters = 'qwertyuiopasdfghjklzxcvbnm';//letters possibility
-const currentWord = 'aaeaaa'.toUpperCase();//current word to guess
+const currentWord = 'papch'.toUpperCase();//current word to guess
+const main_container = document.getElementById('main'); //get the main section
+let charCount = countChar(currentWord);
+let correct = {};
+let tried = {};
 
 function createBoard() {//creating the board dynmicly
-  let main_container = document.getElementById('main'); //get the main section
   let container = document.createElement('section');//create section
   container.id = 'guess-container';//assign id to above section
   main_container.appendChild(container); //appending the section above
@@ -11,7 +14,7 @@ function createBoard() {//creating the board dynmicly
 
   let elem_col;// gonna be a col inside row
 
-  for (let i = 0; i < 6; i++) {//create 6 rows
+  for (let i = 0; i < 4; i++) {//create 6 rows
     elem_row = document.createElement('div');
     elem_row.className = 'row';
     for (let j = 0; j < 5; j++) {//create 5 columns
@@ -27,11 +30,11 @@ function createBoard() {//creating the board dynmicly
 
       elem_col.addEventListener('keyup', (e) => { //add writing event
         if (j == 4 && e.key === 'Enter') {//if user pressed enter and in last coulmn
-          if(e.target.value){
-          e.target.setAttribute('disabled', '');//disabled all the buttons except the first
-          searchCorrectWords(e.target.parentElement);// check for win
+          if (e.target.value) {
+            e.target.setAttribute('disabled', '');//disabled all the buttons except the first
+            searchCorrectWords(e.target.parentElement);// check for win
           }
-        } else if (e.key === "Backspace"){
+        } else if (e.key === "Backspace") {
           deleteWord(e.target);
         }
         else {
@@ -46,6 +49,18 @@ function createBoard() {//creating the board dynmicly
   }
 }
 
+function countChar(currentWord) {
+  let count = {};
+  for (let i = 0; i < currentWord.length; i++) {
+    if (count[currentWord[i]])
+      count[currentWord[i]] += 1;
+    else {
+      count[currentWord[i]] = 1;
+    }
+  }
+  return count;
+}
+
 function write(i, j, e) {
   if (letters.includes(e.key.toLowerCase())) {//check if input is legal
     e.target.value = e.key.toUpperCase();//add value to input
@@ -58,15 +73,15 @@ function write(i, j, e) {
   }
 }
 
-function deleteWord(col){
+function deleteWord(col) {
   let parent = col.parentElement;
-  for(let i = 0; i < parent.children.length; i++){
-    if(parent.children[i+1] === col){
+  for (let i = 0; i < parent.children.length; i++) {
+    if (parent.children[i + 1] === col) {
       parent.children[i].value = '';
       parent.children[i].removeAttribute('disabled');
       col.blur();
       parent.children[i].focus();
-      col.setAttribute('disabled','');
+      col.setAttribute('disabled', '');
 
     }
   }
@@ -79,17 +94,34 @@ function searchCorrectWords(row) {//search for correct words in the row
     createBoard();
     return;
   }
+  
   for (let index = 0; index < row.children.length; index++) {//checking each column in row
-    if (currentWord.includes(row.children[index].value)) {
-      if (currentWord[index] === row.children[index].value) {
+    let val = row.children[index].value;
+    if (currentWord.includes(val)) {
+      if (currentWord[index] === val) {
         row.children[index].classList.add('correct');//correct place
-      } else {
-        row.children[index].classList.add('exist');//exist in the given word
+        charCount[val] -= 1;
       }
-    } else{
+    } else {
       row.children[index].classList.add('wrong');
     }
   }
+  tried = countChar(currentWord);
+  for (let index = 0; index < row.children.length; index++) {//checking each column in row
+    let val = row.children[index].value;
+    if (currentWord.includes(val) && currentWord[index] !== val) {
+      if(tried[val] > 0 && !row.children[index].classList.contains('correct') && charCount[val] >= 1 ){
+        row.children[index].classList.add('exist');//exist in the given word
+        tried[val] -= 1;
+      }
+      else{
+        row.children[index].classList.add('wrong');
+      }
+    }
+  }
+
+
+
   moveRow(row);
 }
 
@@ -118,8 +150,8 @@ function moveRow(row) {// if row is full move to next row
   for (let i = 0; i < parent.children.length - 1; i++) {
     if (parent.children[i] === row) {
       parent.children[i + 1].children[0].removeAttribute('disabled');
-
       parent.children[i + 1].children[0].focus();
+      charCount = countChar(currentWord);
       return;
     }
   }
@@ -133,6 +165,20 @@ function resetBoard(row) {
   return;
 }
 
+function createKeyboard() {
+  let container = document.createElement('section');//create section
+  container.id = 'keyboard';//assign id to above section
+  main_container.appendChild(container); //appending the section above
+  let elem_row;// gonna be a row
+  let elem_col;// gonna be a col inside row
 
+  for (let i = 0; i < 3; i++) {//create 6 rows
+    elem_row = document.createElement('div');
+    elem_row.className = 'row';
+  
+  }
+}
+
+//document.activeElement
 createBoard();
 
