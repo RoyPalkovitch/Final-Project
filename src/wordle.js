@@ -1,7 +1,4 @@
 
-const letters = 'qwertyuiopasdfghjklzxcvbnm';//letters possibility
-const currentWord = 'lidan'.toUpperCase();//current word to guess
-
 let charCount = countChar(currentWord);
 let correct = {};
 let tried = {};
@@ -23,49 +20,59 @@ function countChar(currentWord) {
   return count;
 }
 
-function write(i, j, e) {
-  if (letters.includes(e.key.toLowerCase())) {//check if input is legal
-    e.target.value = e.key.toUpperCase();//add value to input
-    if (j !== 4) {
-      e.target.setAttribute('disabled', ''); // set current input to disabled
-      moveFocus(e.target.parentElement, j);//move the focus to next one
+function write(e) {
+  if (letters.includes(e.toLowerCase())) {//check if input is legal
+    current_focus.value = e.toUpperCase();//add value to input
+    if (current_focus.nextSibling) {
+      current_focus.setAttribute('disabled', ''); // set current input to disabled
     }
+    moveFocus();//move the focus to next one
   } else {
-    e.target.value = '';
+    current_focus.value = '';
   }
 }
 
-function deleteWord(col) {
-  let parent = col.parentElement;
-  for (let i = 0; i < parent.children.length; i++) {
-    if (parent.children[i + 1] === col) {
-      parent.children[i].value = '';
-      parent.children[i].removeAttribute('disabled');
-      col.blur();
-      parent.children[i].focus();
-      col.setAttribute('disabled', '');
+function deleteWord() {
 
-    }
+  let prev = current_focus.previousSibling;
+  if(current_focus.value !== ''){
+    current_focus.value = '';
+    return;
+  } else if (prev){
+    current_focus.blur();
+    current_focus.setAttribute('disabled','');
+    current_focus = prev;
+    current_focus.removeAttribute('disabled');
+    current_focus.focus();
   }
 }
 
 function searchCorrectWords(row) {//search for correct words in the row
   let win = checkWin(row)
-
+  let keyboard;
   for (let index = 0; index < row.children.length; index++) {//checking each column in row
     let val = row.children[index].value;
+    keyboard = document.getElementById(val);
     if (currentWord.includes(val)) {
       if (currentWord[index] === val) {
         row.children[index].classList.add('correct');//correct place
+        keyboard.classList.add('correct');
+        keyboard.classList.remove('exist');
         charCount[val] -= 1;
+      }else{
+        if(!keyboard.className.includes('correct')){
+        keyboard.classList.add('exist');
+        }
       }
     } else {
       row.children[index].classList.add('wrong');
+      keyboard.classList.add('wrong');
     }
   }
   tried = countChar(currentWord);
   for (let index = 0; index < row.children.length; index++) {//checking each column in row
     let val = row.children[index].value;
+    //keyboard = document.getElementById(val);
     if (currentWord.includes(val) && currentWord[index] !== val) {
       if (tried[val] > 0 && !row.children[index].classList.contains('correct') && charCount[val] >= 1) {
         row.children[index].classList.add('exist');//exist in the given word
@@ -73,13 +80,14 @@ function searchCorrectWords(row) {//search for correct words in the row
       }
       else {
         row.children[index].classList.add('wrong');
+
       }
     }
   }
 
 
   if (!win) {
-    moveRow(row);
+    moveRow();
   }
 }
 
@@ -96,39 +104,25 @@ function checkWin(row) {//check if all the word are correct and in order
 }
 
 
-function moveFocus(row, col) {//move the focus from correct column and remove the disabled from the next
-  if (col < 4) {
-    row.children[col].blur();
-    row.children[col + 1].removeAttribute('disabled');
-    row.children[col + 1].focus();
+function moveFocus() {//move the focus from correct column and remove the disabled from the next
+  if (current_focus.nextSibling) {
+    current_focus.blur();
+    current_focus = current_focus.nextSibling;
+    current_focus.removeAttribute('disabled');
+    current_focus.focus();
   }
+  current_focus.focus();
 }
 
-function moveRow(row) {// if row is full move to next row
-  let parent = row.parentElement;
-  for (let i = 0; i < parent.children.length - 1; i++) {
-    if (parent.children[i] === row) {
-      parent.children[i + 1].children[0].removeAttribute('disabled');
-      parent.children[i + 1].children[0].focus();
-      charCount = countChar(currentWord);
-      return;
-    }
+function moveRow() {// if row is full move to next row
+  let row = current_focus.parentElement;
+  let next_row = row.nextSibling;
+  if(next_row){
+    current_focus = next_row.children[0];
+    current_focus.removeAttribute('disabled');
+    current_focus.focus();
+    charCount = countChar(currentWord);
+    return;
   }
-
   showPopup(row, 'You Lose...');
 }
-
-
-
-
-
-
-
-
-
-
-
-//document.activeElement
-
-
-
