@@ -1,53 +1,15 @@
 
 const letters = 'qwertyuiopasdfghjklzxcvbnm';//letters possibility
-const currentWord = 'papch'.toUpperCase();//current word to guess
-const main_container = document.getElementById('main'); //get the main section
+const currentWord = 'lidan'.toUpperCase();//current word to guess
+
 let charCount = countChar(currentWord);
 let correct = {};
 let tried = {};
 
-function createBoard() {//creating the board dynmicly
-  let container = document.createElement('section');//create section
-  container.id = 'guess-container';//assign id to above section
-  main_container.appendChild(container); //appending the section above
-  let elem_row;// gonna be a row
-
-  let elem_col;// gonna be a col inside row
-
-  for (let i = 0; i < 4; i++) {//create 6 rows
-    elem_row = document.createElement('div');
-    elem_row.className = 'row';
-    for (let j = 0; j < 5; j++) {//create 5 columns
-      elem_col = document.createElement('input');
-      elem_col.className = 'col game-tile';
-      elem_col.setAttribute('maxlength', '1');
-      if (j === 0 && i === 0) {
-        elem_col.autofocus = true;//focus on first element
-        elem_col.focus();
-      } else {
-        elem_col.setAttribute('disabled', '');//disabled all the buttons except the first
-      }
-
-      elem_col.addEventListener('keyup', (e) => { //add writing event
-        if (j == 4 && e.key === 'Enter') {//if user pressed enter and in last coulmn
-          if (e.target.value) {
-            e.target.setAttribute('disabled', '');//disabled all the buttons except the first
-            searchCorrectWords(e.target.parentElement);// check for win
-          }
-        } else if (e.key === "Backspace") {
-          deleteWord(e.target);
-        }
-        else {
-          write(i, j, e);
-        }
-      });
 
 
-      elem_row.appendChild(elem_col);
-    }
-    container.appendChild(elem_row);
-  }
-}
+
+
 
 function countChar(currentWord) {
   let count = {};
@@ -88,13 +50,8 @@ function deleteWord(col) {
 }
 
 function searchCorrectWords(row) {//search for correct words in the row
-  if (checkWin(row)) {//if win reset the game
-    alert('Winner');
-    row.parentElement.remove();
-    createBoard();
-    return;
-  }
-  
+  let win = checkWin(row)
+
   for (let index = 0; index < row.children.length; index++) {//checking each column in row
     let val = row.children[index].value;
     if (currentWord.includes(val)) {
@@ -110,19 +67,20 @@ function searchCorrectWords(row) {//search for correct words in the row
   for (let index = 0; index < row.children.length; index++) {//checking each column in row
     let val = row.children[index].value;
     if (currentWord.includes(val) && currentWord[index] !== val) {
-      if(tried[val] > 0 && !row.children[index].classList.contains('correct') && charCount[val] >= 1 ){
+      if (tried[val] > 0 && !row.children[index].classList.contains('correct') && charCount[val] >= 1) {
         row.children[index].classList.add('exist');//exist in the given word
         tried[val] -= 1;
       }
-      else{
+      else {
         row.children[index].classList.add('wrong');
       }
     }
   }
 
 
-
-  moveRow(row);
+  if (!win) {
+    moveRow(row);
+  }
 }
 
 function checkWin(row) {//check if all the word are correct and in order
@@ -131,6 +89,7 @@ function checkWin(row) {//check if all the word are correct and in order
     win += row.children[i].value;
   }
   if (win === currentWord) {
+    showPopup(row, 'You Win!');
     return true;
   }
   return false;
@@ -155,30 +114,21 @@ function moveRow(row) {// if row is full move to next row
       return;
     }
   }
-  resetBoard(row);
+
+  showPopup(row, 'You Lose...');
 }
 
-function resetBoard(row) {
-  alert('Loser');
-  row.parentElement.remove();
-  createBoard();
-  return;
-}
 
-function createKeyboard() {
-  let container = document.createElement('section');//create section
-  container.id = 'keyboard';//assign id to above section
-  main_container.appendChild(container); //appending the section above
-  let elem_row;// gonna be a row
-  let elem_col;// gonna be a col inside row
 
-  for (let i = 0; i < 3; i++) {//create 6 rows
-    elem_row = document.createElement('div');
-    elem_row.className = 'row';
-  
-  }
-}
+
+
+
+
+
+
+
 
 //document.activeElement
-createBoard();
+
+
 
