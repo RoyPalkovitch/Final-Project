@@ -2,7 +2,7 @@ const main_container = document.getElementById('main'); //get the main section
 const popUp = document.getElementById('popup');
 let current_focus = ''
 const letters = 'qwertyuiopasdfghjklzxcvbnm';//letters possibility
-const currentWord = 'lidan'.toUpperCase();//current word to guess
+const currentWord = 'event'.toUpperCase();//current word to guess
 
 function createBoard() {//creating the board dynmicly
   let container = document.createElement('section');//create section
@@ -16,23 +16,20 @@ function createBoard() {//creating the board dynmicly
     elem_row = document.createElement('div');
     elem_row.className = 'row';
     for (let j = 0; j < 5; j++) {//create 5 columns
-      elem_col = document.createElement('input');
+      elem_col = document.createElement('div');
       elem_col.className = 'col game-tile';
       elem_col.setAttribute('maxlength', '1');
       if (j === 0 && i === 0) {
         elem_col.id = 'first-tile';//mark the first tile for focus on load
-      } else {
-        elem_col.setAttribute('disabled', '');//disabled all the buttons except the first
       }
       
       elem_col.addEventListener('keyup', (e) => { //add key up event
         if (j == 4 && e.key === 'Enter') {//if user pressed enter and in last coulmn
-          if (e.target.value) {
-            e.target.setAttribute('disabled', '');//disabled the last button while search for win
+          if (e.target.innerHTML) {
             searchCorrectWords(e.target.parentElement);// check for win
           }
         } else if (e.key === "Backspace") { // remove
-          deleteWord(e.target);
+          deleteWord();
         }
         else {
           write(e.key);//write the letter
@@ -51,7 +48,7 @@ function createBoard() {//creating the board dynmicly
 
 function showPopup(row,txt){
   popUp.style.display = 'flex';
-  row.lastChild.blur();
+  row.lastChild.classList.remove('focus');
   popUp.children[0].children[0].innerHTML = txt;
   
 
@@ -118,12 +115,11 @@ function createKeyboard() {
       elem_col.addEventListener('click', (e) => { //add key up event
         
         if (!current_focus.nextSibling && e.target.value === 'Enter') {//if user pressed enter and in last coulmn
-          if (current_focus.value) {
-            current_focus.setAttribute('disabled', '');//disabled the last button while search for win
+          if (current_focus.innerHTML) {
             searchCorrectWords(current_focus.parentElement);// check for win
           }
         } else if (e.target.value === "Backspace") { // remove
-          deleteWord(current_focus);
+          deleteWord();
         }
         else {
           write(e.target.value);//write the letter
@@ -137,10 +133,26 @@ function createKeyboard() {
 }
 
 function focusOnload() {
-  let tile = document.getElementById('first-tile');
-  tile.focus();
-  current_focus = tile;
+  current_focus = document.getElementById('first-tile');
+  current_focus.classList.add('focus');
 }
 
 createBoard();
-window.onload = focusOnload;
+document.addEventListener('DOMContentLoaded', () => focusOnload());
+
+
+
+document.body.addEventListener('keyup', (e) => { //add key up event
+        
+  if (!current_focus.nextSibling && e.key === 'Enter') {//if user pressed enter and in last coulmn
+    if (current_focus.innerHTML) {
+      searchCorrectWords(current_focus.parentElement);// check for win
+    }
+  } else if (e.key === "Backspace") { // remove
+    deleteWord();
+  }
+  else {
+    write(e.key);//write the letter
+  }
+});
+

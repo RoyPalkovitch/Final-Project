@@ -3,11 +3,6 @@ let charCount = countChar(currentWord);
 let correct = {};
 let tried = {};
 
-
-
-
-
-
 function countChar(currentWord) {
   let count = {};
   for (let i = 0; i < currentWord.length; i++) {
@@ -20,38 +15,23 @@ function countChar(currentWord) {
   return count;
 }
 
-function write(e) {
-  if (letters.includes(e.toLowerCase())) {//check if input is legal
-    current_focus.value = e.toUpperCase();//add value to input
-    if (current_focus.nextSibling) {
-      current_focus.setAttribute('disabled', ''); // set current input to disabled
-    }
-    moveFocus();//move the focus to next one
-  } else {
-    current_focus.value = '';
-  }
-}
 
 function deleteWord() {
-
   let prev = current_focus.previousSibling;
-  if(current_focus.value !== ''){
-    current_focus.value = '';
-    return;
-  } else if (prev){
-    current_focus.blur();
-    current_focus.setAttribute('disabled','');
-    current_focus = prev;
-    current_focus.removeAttribute('disabled');
-    current_focus.focus();
-  }
+  current_focus.innerHTML = '';
+  if (prev) {
+      current_focus.classList.remove('focus');
+      current_focus = prev;
+      current_focus.classList.add('focus');
+    }
+  
 }
 
 function searchCorrectWords(row) {//search for correct words in the row
   let win = checkWin(row)
   let keyboard;
   for (let index = 0; index < row.children.length; index++) {//checking each column in row
-    let val = row.children[index].value;
+    let val = row.children[index].innerHTML;
     keyboard = document.getElementById(val);
     if (currentWord.includes(val)) {
       if (currentWord[index] === val) {
@@ -59,9 +39,9 @@ function searchCorrectWords(row) {//search for correct words in the row
         keyboard.classList.add('correct');
         keyboard.classList.remove('exist');
         charCount[val] -= 1;
-      }else{
-        if(!keyboard.className.includes('correct')){
-        keyboard.classList.add('exist');
+      } else {
+        if (!keyboard.className.includes('correct')) {
+          keyboard.classList.add('exist');
         }
       }
     } else {
@@ -69,14 +49,13 @@ function searchCorrectWords(row) {//search for correct words in the row
       keyboard.classList.add('wrong');
     }
   }
-  tried = countChar(currentWord);
+  //tried = countChar(currentWord) tried[val] > 0 && ;
   for (let index = 0; index < row.children.length; index++) {//checking each column in row
-    let val = row.children[index].value;
-    //keyboard = document.getElementById(val);
+    let val = row.children[index].innerHTML;
     if (currentWord.includes(val) && currentWord[index] !== val) {
-      if (tried[val] > 0 && !row.children[index].classList.contains('correct') && charCount[val] >= 1) {
+      if (!row.children[index].classList.contains('correct') && charCount[val] >= 1) {
         row.children[index].classList.add('exist');//exist in the given word
-        tried[val] -= 1;
+        charCount[val] -= 1;
       }
       else {
         row.children[index].classList.add('wrong');
@@ -94,7 +73,7 @@ function searchCorrectWords(row) {//search for correct words in the row
 function checkWin(row) {//check if all the word are correct and in order
   let win = ''
   for (let i = 0; i < row.children.length; i++) {
-    win += row.children[i].value;
+    win += row.children[i].innerHTML;
   }
   if (win === currentWord) {
     showPopup(row, 'You Win!');
@@ -104,23 +83,39 @@ function checkWin(row) {//check if all the word are correct and in order
 }
 
 
+function write(e) {
+  if (letters.includes(e.toLowerCase())) {//check if input is legal
+    if(current_focus.innerHTML && current_focus.nextSibling){
+      moveFocus();
+      current_focus.innerHTML = e.toUpperCase();//add value to input
+    } else if (current_focus.nextSibling) {
+      current_focus.innerHTML = e.toUpperCase();//add value to input
+      moveFocus();//move the focus to next one
+    }else{
+      current_focus.innerHTML = e.toUpperCase();//add value to input
+    }
+  } else {
+    current_focus.innerHTML = '';
+  }
+}
+
+
 function moveFocus() {//move the focus from correct column and remove the disabled from the next
   if (current_focus.nextSibling) {
-    current_focus.blur();
-    current_focus = current_focus.nextSibling;
-    current_focus.removeAttribute('disabled');
-    current_focus.focus();
+    current_focus.classList.remove('focus');//remove focus class
+    current_focus = current_focus.nextSibling;// move the focus to sibling
+    current_focus.classList.add('focus');//add focus class
   }
-  current_focus.focus();
 }
 
 function moveRow() {// if row is full move to next row
-  let row = current_focus.parentElement;
-  let next_row = row.nextSibling;
-  if(next_row){
-    current_focus = next_row.children[0];
-    current_focus.removeAttribute('disabled');
-    current_focus.focus();
+  let row = current_focus.parentElement;//get the current row
+  let next_row = row.nextSibling;//move to next row
+  if (next_row) {//if not last row
+    current_focus.classList.remove('focus');
+    current_focus = next_row.children[0];//change current focus for first element in next row
+    current_focus.classList.add('focus');//add focus class
+
     charCount = countChar(currentWord);
     return;
   }
